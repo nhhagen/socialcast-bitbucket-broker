@@ -92,6 +92,7 @@ if (__name__ == '__main__'):
                 'files': [{'file': u'socialcast.py',
                            'type': u'modified'},
                           {'file': u'.gitignore',
+                           'type': u'modified'}],
                 'message': u'added commit messages support, issue #206 fixed',
                 'node': u'e71c63bcc05e',
                 'revision': 1650,
