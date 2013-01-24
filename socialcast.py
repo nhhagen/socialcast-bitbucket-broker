@@ -94,7 +94,7 @@ if (__name__ == '__main__'):
                           {'file': u'.gitignore',
                            'type': u'modified'}],
                 'message': u'added commit messages support, issue #206 fixed',
-                'node': u'e71c63bcc05e',
+                'node': u'ce67db6',
                 'revision': 1650,
                 'size': 684}],
                 'repository': { 'absolute_url': u'nhhagen/socialcast-bitbucket-broker',
