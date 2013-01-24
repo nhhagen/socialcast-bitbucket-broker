@@ -32,12 +32,12 @@ class URLOpener(urllib.FancyURLopener):
         return (self.user, self.password)
 
     """
-    Post activty to SocialCast
+    Post activity to SocialCast
 
     Three parameters are expected within the payload['service']:
-    url (required) - the URL to the SocialCast comunity
-    username (required) - the username to use for authentication against the SocialCast comunity
-    password (required) - the password to use for authentication against the SocialCast comunity
+    url (required) - the URL to the SocialCast community
+    username (required) - the username to use for authentication against the SocialCast community
+    password (required) - the password to use for authentication against the SocialCast community
 
     Five parameters are expected within the payload['repository']:
     owner (required) - the owner of the repository
