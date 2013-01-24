@@ -68,7 +68,7 @@ class SocialCast(BaseBroker):
         commits = ''
         commit_count = 0
         for commit in payload['commits']:
-            commits += '@%s - %s (%s)\n' % (commit['author'].replace(' ', ''), commit['message'], commit['node'])
+            commits += '@%s - %s (Commit: %s %s/commits/%s)\n' % (commit['author'].replace(' ', ''), commit['message'], commit['node'], repo_url, commit['node'])
             commit_count = commit_count+1
 
         if commit_count == 1:
