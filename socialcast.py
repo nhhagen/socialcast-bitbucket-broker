@@ -34,7 +34,7 @@ class URLOpener(urllib.FancyURLopener):
     """
     Post activity to SocialCast
 
-    Four parameters are expected within the payload['service']:
+    Five parameters are expected within the payload['service']:
     url (required) - the URL to the SocialCast community
     group_id (optional) - The id (integer) of a SocialCast group, easiest way to find an id is to use the Groups API 
                         curl -X GET -v --basic -u  "emily@socialcast.com:demo" https://demo.socialcast.com/api/groups.xml
@@ -42,17 +42,18 @@ class URLOpener(urllib.FancyURLopener):
     password (required) - the password to use for authentication against the SocialCast community
     branch_filter (optional) - if set only changes to that branch will be pushed to the SocialCast community
 
-    Five parameters are expected within the payload['repository']:
+    Thow parameters are expected within the payload['repository']:
     owner (required) - the owner of the repository
     name (required) - the name of the repository
-    website (required)
-    absolute_url (required)
 
-    Three parameters are expected within the payload['commits']:
+    Four parameters are expected within the payload['commits']:
     author (required) - if the commit author matches the a SocialCast user (after removing whitespace) a mention on SocialCast happens
     branch (required) - the branch the change was made on
     message (required)
     node (required)
+
+    One paramter is expected within the commit[files]
+    type (required) - expected values are "added", "modified", "removed", the type of change done to a file
     """ 
 class SocialCast(BaseBroker):
     def handle(self, payload):
