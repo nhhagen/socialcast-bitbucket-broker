@@ -40,6 +40,7 @@ class URLOpener(urllib.FancyURLopener):
                         curl -X GET -v --basic -u  "emily@socialcast.com:demo" https://demo.socialcast.com/api/groups.xml
     username (required) - the username to use for authentication against the SocialCast community
     password (required) - the password to use for authentication against the SocialCast community
+    branch_filter (optional) - if set only changes to that branch will be pushed to the SocialCast community
 
     Five parameters are expected within the payload['repository']:
     owner (required) - the owner of the repository
@@ -60,6 +61,7 @@ class SocialCast(BaseBroker):
         username = payload['service']['username']
         password = payload['service']['password']
         group_id = payload['service']['group_id'] if 'group_id' in payload['service'] else ''
+        branch_filter = payload['service']['branch_filter'] if 'branch_filter' in payload['service'] else None
  
         del payload['service']
         del payload['broker']
@@ -67,41 +69,44 @@ class SocialCast(BaseBroker):
         repository = payload['repository']
         repo_name = '%s/%s' % (repository['owner'], repository['name'])
         
-        s_if_plural = 's' if len(payload['commits']) > 1 else ''
-        
-        title = '%s commit%s pushed to BitBucket repo %s' % (len(payload['commits']), s_if_plural, repo_name)
-
         body = ''
+        valid_commits = 0
         for commit in payload['commits']:
-            addedCount = 0
-            modifiedCount = 0
-            removedCount = 0
-            for f in commit['files']:
-                if f['type'] == 'added':    addedCount = addedCount + 1
-                if f['type'] == 'modified': modifiedCount = modifiedCount + 1
-                if f['type'] == 'removed':  removedCount = removedCount + 1
+            if commit['branch'] == branch_filter or branch_filter == None: #Only build commit messages for valid branches
+                valid_commits = valid_commits + 1
+                addedCount = 0
+                modifiedCount = 0
+                removedCount = 0
+                for f in commit['files']:
+                    if f['type'] == 'added':    addedCount = addedCount + 1
+                    if f['type'] == 'modified': modifiedCount = modifiedCount + 1
+                    if f['type'] == 'removed':  removedCount = removedCount + 1
 
-            body += '%s made changes to %s ' % (commit['author'], commit['branch'])
+                body += '%s made changes to %s ' % (commit['author'], commit['branch'])
 
-            files = list()
-            if addedCount > 0: 
-                files.append('added %s' % addedCount)
-            if modifiedCount > 0:
-                files.append('modified %s' % modifiedCount)
-            if removedCount > 0:
-                files.aappenddd('removed %s' % removedCount)
+                files = list()
+                if addedCount > 0: 
+                    files.append('added %s' % addedCount)
+                if modifiedCount > 0:
+                    files.append('modified %s' % modifiedCount)
+                if removedCount > 0:
+                    files.aappenddd('removed %s' % removedCount)
 
-            s_if_plural = 's' if sum([addedCount, modifiedCount, removedCount]) > 1 else ''
-            body += '%s file%s' % (', '.join(files), s_if_plural)
+                s_if_plural = 's' if sum([addedCount, modifiedCount, removedCount]) > 1 else ''
+                body += '%s file%s' % (', '.join(files), s_if_plural)
 
-            body += ' in changeset %s, message was \"%s\"\n' % (commit['node'], commit['message'])
-        
-        socialCastPayload = urllib.urlencode({"message[title]":title,"message[body]":body, "message[group_id]":group_id})
+                body += ' in changeset %s, message was \"%s\"\n' % (commit['node'], commit['message'])
 
-        opener = self.get_local('opener', URLOpener)
-        opener.user = username
-        opener.password = password
-        opener.open(url, socialCastPayload)
+        if valid_commits > 0: #Only push to SocialCast if there are valid commits
+            s_if_plural = 's' if valid_commits > 1 else ''
+            title = '%s commit%s pushed to BitBucket repo %s' % (valid_commits, s_if_plural, repo_name)
+
+            socialCastPayload = urllib.urlencode({"message[title]":title,"message[body]":body, "message[group_id]":group_id})
+
+            opener = self.get_local('opener', URLOpener)
+            opener.user = username
+            opener.password = password
+            opener.open(url, socialCastPayload)
 
 #For test execution
 #The username and password provided here are provied by SocialCast to use with their test community
@@ -117,6 +122,15 @@ if (__name__ == '__main__'):
                     'message': u'added commit messages support, issue #206 fixed',
                     'node': u'ce67db6',
                     'revision': 1650,
+                    'size': 684},
+                    { 
+                            'author': u'nhhagen',
+                            'branch': u'master',
+                    'files': [{'file': u'socialcast.py',
+                               'type': u'modified'}],
+                    'message': u'added commit messages support, issue #206 fixed',
+                    'node': u'ce67db6',
+                    'revision': 1650,
                     'size': 684}],
                 'repository': { 'absolute_url': u'nhhagen/socialcast-bitbucket-broker',
                 'name': u'socialcast-bitbucket-broker',
@@ -125,6 +139,53 @@ if (__name__ == '__main__'):
                 'website': u'http://bitbucket.org/'},
                 'service': {'password': u'demo', 'username': u'emily@socialcast.com', 'url': u'https://demo.socialcast.com'}
                 }
+
+    payload_with_branch_filter = {
+                'broker': u'socialcast',
+                'commits': [{ 
+                            'author': u'nhhagen',
+                            'branch': u'featureX',
+                    'files': [{'file': u'socialcast.py',
+                               'type': u'modified'}],
+                    'message': u'added commit messages support, issue #206 fixed',
+                    'node': u'ce67db6',
+                    'revision': 1650,
+                    'size': 684},
+                    { 
+                            'author': u'nhhagen',
+                            'branch': u'master',
+                    'files': [{'file': u'socialcast.py',
+                               'type': u'modified'}],
+                    'message': u'added commit messages support, issue #206 fixed',
+                    'node': u'ce67db6',
+                    'revision': 1650,
+                    'size': 684}],
+                'repository': { 'absolute_url': u'nhhagen/socialcast-bitbucket-broker',
+                'name': u'socialcast-bitbucket-broker',
+                'owner': u'nhhagen',
+                'slug': u'socialcast-bitbucket-broker',
+                'website': u'http://bitbucket.org/'},
+                'service': {'password': u'demo', 'username': u'emily@socialcast.com', 'url': u'https://demo.socialcast.com', 'branch_filter': u'master'}
+            }
+
+    payload_with_branch_filter_matching_branch = {
+                'broker': u'socialcast',
+                'commits': [{ 
+                            'author': u'nhhagen',
+                            'branch': u'featureX',
+                    'files': [{'file': u'socialcast.py',
+                               'type': u'modified'}],
+                    'message': u'added commit messages support, issue #206 fixed',
+                    'node': u'ce67db6',
+                    'revision': 1650,
+                    'size': 684}],
+                'repository': { 'absolute_url': u'nhhagen/socialcast-bitbucket-broker',
+                'name': u'socialcast-bitbucket-broker',
+                'owner': u'nhhagen',
+                'slug': u'socialcast-bitbucket-broker',
+                'website': u'http://bitbucket.org/'},
+                'service': {'password': u'demo', 'username': u'emily@socialcast.com', 'url': u'https://demo.socialcast.com', 'branch_filter': u'featureX'}
+            }
 
     payload_with_group = {
                 'broker': u'socialcast',
@@ -149,3 +210,5 @@ if (__name__ == '__main__'):
 
     broker.handle(payload)
     broker.handle(payload_with_group)
+    broker.handle(payload_with_branch_filter)
+    broker.handle(payload_with_branch_filter_matching_branch)
