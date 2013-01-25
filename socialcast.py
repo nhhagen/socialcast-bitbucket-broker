@@ -36,7 +36,8 @@ class URLOpener(urllib.FancyURLopener):
 
     Four parameters are expected within the payload['service']:
     url (required) - the URL to the SocialCast community
-    group_id (optional) - The id of a SocialCast group
+    group_id (optional) - The id (integer) of a SocialCast group, easiest way to find an id is to use the Groups API 
+                        curl -X GET -v --basic -u  "emily@socialcast.com:demo" https://demo.socialcast.com/api/groups.xml
     username (required) - the username to use for authentication against the SocialCast community
     password (required) - the password to use for authentication against the SocialCast community
 
@@ -132,7 +133,7 @@ if (__name__ == '__main__'):
                 'owner': u'nhhagen',
                 'slug': u'socialcast-bitbucket-broker',
                 'website': u'http://bitbucket.org/'},
-                'service': {'password': u'demo', 'username': u'emily@socialcast.com', 'url': u'https://demo.socialcast.com', 'group_id': u'test'}
+                'service': {'password': u'demo', 'username': u'emily@socialcast.com', 'url': u'https://demo.socialcast.com', 'group_id': u'8'}
                 }
 
     broker.handle(payload)
