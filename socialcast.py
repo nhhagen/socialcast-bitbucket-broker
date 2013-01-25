@@ -81,7 +81,20 @@ class SocialCast(BaseBroker):
                 if f['type'] == 'modified': modifiedCount = modifiedCount + 1
                 if f['type'] == 'removed':  removedCount = removedCount + 1
 
-            body += '%s made changes to %s +%s ~%s -%s:%s - %s\n' % (commit['author'].replace(' ', ''), commit['branch'], addedCount, modifiedCount, removedCount, commit['node'], commit['message'])
+            body += '%s made changes to %s ' % (commit['author'], commit['branch'])
+
+            files = list()
+            if addedCount > 0: 
+                files.append('added %s' % addedCount)
+            if modifiedCount > 0:
+                files.append('modified %s' % modifiedCount)
+            if removedCount > 0:
+                files.aappenddd('removed %s' % removedCount)
+
+            s_if_plural = 's' if sum([addedCount, modifiedCount, removedCount]) > 1 else ''
+            body += '%s file%s' % (', '.join(files), s_if_plural)
+
+            body += ' in changeset %s, message was \"%s\"\n' % (commit['node'], commit['message'])
         
         socialCastPayload = urllib.urlencode({"message[title]":title,"message[body]":body, "message[group_id]":group_id})
 
@@ -100,8 +113,6 @@ if (__name__ == '__main__'):
                             'author': u'nhhagen',
                             'branch': u'master',
                     'files': [{'file': u'socialcast.py',
-                               'type': u'modified'},
-                              {'file': u'.gitignore',
                                'type': u'modified'}],
                     'message': u'added commit messages support, issue #206 fixed',
                     'node': u'ce67db6',
@@ -123,7 +134,7 @@ if (__name__ == '__main__'):
                     'files': [{'file': u'socialcast.py',
                                'type': u'modified'},
                               {'file': u'.gitignore',
-                               'type': u'modified'}],
+                               'type': u'added'}],
                     'message': u'added commit messages support, issue #206 fixed',
                     'node': u'ce67db6',
                     'revision': 1650,
