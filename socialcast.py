@@ -58,20 +58,16 @@ class SocialCast(BaseBroker):
         url = "%s%s" % (payload['service']['url'], api_path)
         username = payload['service']['username']
         password = payload['service']['password']
-        group_id = payload['service']['group_id']
+        group_id = payload['service']['group_id'] if 'group_id' in payload['service'] else ''
  
         del payload['service']
         del payload['broker']
 
         repository = payload['repository']
-        repo_url = "%s%s" % (repository['website'], repository['absolute_url'])
         repo_name = '%s/%s' % (repository['owner'], repository['name'])
         
-        if len(payload['commits']) > 1:
-            s_if_plural = 's'
-        else:
-            s_if_plural = ''
-
+        s_if_plural = 's' if len(payload['commits']) > 1 else ''
+        
         title = '%s commit%s pushed to BitBucket repo %s' % (len(payload['commits']), s_if_plural, repo_name)
 
         body = ''
@@ -80,16 +76,13 @@ class SocialCast(BaseBroker):
             modifiedCount = 0
             removedCount = 0
             for f in commit['files']:
-                if f['type'] == 'added':
-                    addedCount = addedCount + 1
-                if f['type'] == 'modified':
-                    modifiedCount = modifiedCount + 1
-                if f['type'] == 'removed':
-                    removedCount = removedCount + 1
+                if f['type'] == 'added':    addedCount = addedCount + 1
+                if f['type'] == 'modified': modifiedCount = modifiedCount + 1
+                if f['type'] == 'removed':  removedCount = removedCount + 1
 
             body += '@%s changed %s +%s ~%s -%s:%s - %s\n' % (commit['author'].replace(' ', ''), commit['branch'], addedCount, modifiedCount, removedCount, commit['node'], commit['message'])
         
-        socialCastPayload = urllib.urlencode({"message[title]":title,"message[body]":body})
+        socialCastPayload = urllib.urlencode({"message[title]":title,"message[body]":body, "message[group_id]":group_id})
 
         opener = self.get_local('opener', URLOpener)
         opener.user = username
@@ -118,7 +111,29 @@ if (__name__ == '__main__'):
                 'owner': u'nhhagen',
                 'slug': u'socialcast-bitbucket-broker',
                 'website': u'http://bitbucket.org/'},
-                'service': {'password': u'demo', 'username': u'emily@socialcast.com', 'url': u'https://demo.socialcast.com', 'group_id': u'None'}
+                'service': {'password': u'demo', 'username': u'emily@socialcast.com', 'url': u'https://demo.socialcast.com'}
+                }
+
+    payload_with_group = {
+                'broker': u'socialcast',
+                'commits': [{ 
+                            'author': u'nhhagen',
+                            'branch': u'master',
+                    'files': [{'file': u'socialcast.py',
+                               'type': u'modified'},
+                              {'file': u'.gitignore',
+                               'type': u'modified'}],
+                    'message': u'added commit messages support, issue #206 fixed',
+                    'node': u'ce67db6',
+                    'revision': 1650,
+                    'size': 684}],
+                'repository': { 'absolute_url': u'nhhagen/socialcast-bitbucket-broker',
+                'name': u'socialcast-bitbucket-broker',
+                'owner': u'nhhagen',
+                'slug': u'socialcast-bitbucket-broker',
+                'website': u'http://bitbucket.org/'},
+                'service': {'password': u'demo', 'username': u'emily@socialcast.com', 'url': u'https://demo.socialcast.com', 'group_id': u'test'}
                 }
 
     broker.handle(payload)
+    broker.handle(payload_with_group)
