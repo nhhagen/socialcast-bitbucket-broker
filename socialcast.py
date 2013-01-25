@@ -81,7 +81,7 @@ class SocialCast(BaseBroker):
                 if f['type'] == 'modified': modifiedCount = modifiedCount + 1
                 if f['type'] == 'removed':  removedCount = removedCount + 1
 
-            body += '@%s changed %s +%s ~%s -%s:%s - %s\n' % (commit['author'].replace(' ', ''), commit['branch'], addedCount, modifiedCount, removedCount, commit['node'], commit['message'])
+            body += '%s made changes to %s +%s ~%s -%s:%s - %s\n' % (commit['author'].replace(' ', ''), commit['branch'], addedCount, modifiedCount, removedCount, commit['node'], commit['message'])
         
         socialCastPayload = urllib.urlencode({"message[title]":title,"message[body]":body, "message[group_id]":group_id})
 
